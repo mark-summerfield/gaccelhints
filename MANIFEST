@@ -1,3 +1,19 @@
+-------------------------------------
+TextView      TextView      TextView     
+of originals  of accel'd    of index
+              auto-calc	    positions
+	      on paste or   of accels
+	      change of     blank if
+	      originals     none
+	      show with
+	      accels as
+	      underlined
+	      and bold
+
+Alphabet [AB.....9]
+StatusLabel e.g. 15/17 88%
+-------------------------------------
+
 gaccelhints.go
 
 README.md
