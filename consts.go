@@ -1,4 +1,4 @@
-// Copyright © 2022 Mark Summerfield. All rights reserved.
+// Copyright © 2022-23 Mark Summerfield. All rights reserved.
 // License: GPL-3
 
 package main
@@ -28,6 +28,4 @@ const (
 	sigClicked   = "clicked"
 	sigDestroy   = "destroy"
 	sigToggled   = "toggled"
-
-	propActive = "active"
 )

@@ -1,4 +1,4 @@
-// Copyright © 2022 Mark Summerfield. All rights reserved.
+// Copyright © 2022-23 Mark Summerfield. All rights reserved.
 // License: GPL-3
 
 package main
@@ -84,7 +84,7 @@ func (me *Config) load() {
 		case "MARKER":
 			me.marker = value[0]
 		default:
-			log.Println("unrecognized configuration key: %q", key)
+			log.Printf("unrecognized configuration key: %q\n", key)
 		}
 	}
 	me.dirty = false

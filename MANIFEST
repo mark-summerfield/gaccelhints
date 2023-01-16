@@ -1,35 +1,3 @@
-# ~/app/go/zOld/TVGuide/MANIFEST
--------------------------------------
-TextView      TextView   
-of originals  of accel'd 
-              auto-calc	 
-	      on paste or
-	      change of  
-	      originals  
-	      show with
-	      accels as
-	      underlined
-	      and bold
-
-[Underline]
-Alphabet [AB.....9] Marker (*) & ( ) _
-StatusLabel e.g. 15/17 88%
--------------------------------------
-
-UI [Underline] button & ^U accel
-
-onU()
-- save line & pos & whether next char is underlined
-- clear styling for whole line
-- if next char is NOT underlined then underline+bold+navy to next char
-- then call refresh() to recalculate
-
-Users can enter "Find & Replace" as-is since we use styling. (But of 
-course when passing strings to accelhints lib'y, we must &->&& and 
-_->__.)
-
--------------------------------------
-
 gaccelhints.go
 appwindow.go
 config.go
@@ -41,3 +9,14 @@ go.mod
 README.md
 
 st.sh
+
+-------------------------------------
+onUnderline()
+- save line & pos & whether next char is underlined
+- clear styling for whole line
+- if next char is NOT underlined then underline+bold+navy to next char
+- then call refresh() to recalculate
+
+Users can enter "Find & Replace" as-is since we use styling. (But of 
+course when passing strings to accelhints lib'y, we must &->&& and 
+_->__.)
