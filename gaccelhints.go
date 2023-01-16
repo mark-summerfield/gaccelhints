@@ -4,13 +4,12 @@
 package main
 
 import (
-	_ "embed"
 	"fmt"
+	"log"
 )
 
-//go:embed Version.dat
-var Version string
-
 func main() {
-	fmt.Printf("Hello gaccelhints v%s\n", Version)
+	log.SetFlags(log.Lmsgprefix)
+	config := NewConfig()
+	fmt.Println(config)
 }

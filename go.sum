@@ -1,1 +1,9 @@
-
+github.com/charles-haynes/munkres v0.0.0-20191008174651-55d467190535 h1:TYMTYpdXBDgxe4F1MlqUlWDH99gpYo6l7Qd4K/LipJM=
+github.com/charles-haynes/munkres v0.0.0-20191008174651-55d467190535/go.mod h1:2HKRkBKHxwbr0C8ufBJJg1OHx0AlzFuzTFeDKf9yMCE=
+github.com/gotk3/gotk3 v0.6.1 h1:GJ400a0ecEEWrzjBvzBzH+pB/esEMIGdB9zPSmBdoeo=
+github.com/gotk3/gotk3 v0.6.1/go.mod h1:/hqFpkNa9T3JgNAE2fLvCdov7c5bw//FHNZrZ3Uv9/Q=
+github.com/mark-summerfield/accelhint v0.5.0 h1:yGBYFp99KwVdgkmB3nxkclxqFZRpmHIJJlLXl5I6or0=
+github.com/mark-summerfield/accelhint v0.5.0/go.mod h1:msRCmBHyFUKasQEBNWRA9t3NjfYm3e5VCsq0lESZkuc=
+go.etcd.io/etcd v3.3.15+incompatible/go.mod h1:yaeTdrJi5lOmYerz05bd8+V7KubZs8YSFZfzsF9A6aI=
+golang.org/x/exp v0.0.0-20230108222341-4b8118a2686a h1:tlXy25amD5A7gOfbXdqCGN5k8ESEed/Ee1E5RcrYnqU=
+golang.org/x/exp v0.0.0-20230108222341-4b8118a2686a/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
