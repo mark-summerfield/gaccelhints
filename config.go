@@ -12,11 +12,12 @@ import (
 	"strings"
 
 	"github.com/mark-summerfield/accelhint"
+	"github.com/mark-summerfield/gong"
 )
 
 type Config struct {
-	filename string
 	dirty    bool
+	filename string
 	x        int // use getPosition()
 	y        int // use getPosition()
 	width    int
@@ -63,9 +64,28 @@ func (me *Config) load() {
 		if i == -1 {
 			continue
 		}
-		key := line[:i]
-		value := line[i+1:]
-		fmt.Println(key, value)
+		key := strings.ToUpper(strings.TrimSpace(line[:i]))
+		value := strings.TrimSpace(line[i+1:])
+		switch key {
+		case "X":
+			me.x = gong.StrToInt(value, 0)
+		case "Y":
+			me.y = gong.StrToInt(value, 0)
+		case "WIDTH":
+			me.width = gong.StrToInt(value, 640)
+		case "HEIGHT":
+			me.height = gong.StrToInt(value, 480)
+		case "XDEC":
+			me.xdec = gong.StrToInt(value, 0)
+		case "YDEC":
+			me.ydec = gong.StrToInt(value, 0)
+		case "ALPHABET":
+			me.alphabet = value
+		case "MARKER":
+			me.marker = value[0]
+		default:
+			log.Println("unrecognized configuration key: %q", key)
+		}
 	}
 	me.dirty = false
 }
