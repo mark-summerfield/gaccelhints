@@ -16,8 +16,8 @@ var Images embed.FS
 const (
 	appID          = "eu.qtrac.gaccelhints"
 	appName        = "gAccelHints"
-	icon           = "gaccelhints.svg"
 	configFilename = "gaccelhints.ini"
+	icon           = "images/accelhint.svg"
 
 	stdMargin     = 6
 	defaultWidth  = 640

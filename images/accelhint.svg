@@ -194,22 +194,26 @@
        style="color:#000000;display:block;opacity:0.48889;fill:none;stroke:#ffffff;stroke-width:2.1498"
        inkscape:connector-curvature="0"
        d="m 160.33355,494.03924 h 260.07553 c 12.15733,0 21.94436,13.35834 21.94436,29.95192 v 245.00026 c 0,16.59357 -9.78703,29.95192 -21.94436,29.95192 H 160.33355 c -12.15733,0 -21.94436,-13.35835 -21.94436,-29.95192 V 523.99116 c 0,-16.59358 9.78703,-29.95192 21.94436,-29.95192 z" />
-    <text
-       xml:space="preserve"
-       style="font-size:230.365px;line-height:125%;font-family:'Nimbus Sans';-inkscape-font-specification:'Nimbus Sans';letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000080;stroke:#000080;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
-       x="240.48999"
-       y="729.43115"
-       id="text173"
-       transform="scale(1.0049441,0.99508022)"><tspan
-         sodipodi:role="line"
-         id="tspan171"
+    <g
+       id="g865"
+       transform="translate(-35.690878,-2.0228365)">
+      <text
+         xml:space="preserve"
+         style="font-size:230.365px;line-height:125%;font-family:'Nimbus Sans';-inkscape-font-specification:'Nimbus Sans';letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000080;stroke:#000080;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          x="240.48999"
          y="729.43115"
-         style="font-weight:bold;fill:#000080;stroke-width:1px;stroke:#000080;">A</tspan></text>
-    <path
-       style="fill:#000080;fill-rule:evenodd;stroke:#000080;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 243.62182,743.29562 c 164.88074,0 164.88074,0 164.88074,0"
-       id="path175" />
+         id="text173"
+         transform="scale(1.0049441,0.99508022)"><tspan
+           sodipodi:role="line"
+           id="tspan171"
+           x="240.48999"
+           y="729.43115"
+           style="font-weight:bold;fill:#000080;stroke:#000080;stroke-width:1px">A</tspan></text>
+      <path
+         style="fill:#000080;fill-rule:evenodd;stroke:#000080;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 243.62182,743.29562 c 164.88074,0 164.88074,0 164.88074,0"
+         id="path175" />
+    </g>
   </g>
   <metadata
      id="metadata81">

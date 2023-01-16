@@ -31,6 +31,7 @@ _->__.)
 -------------------------------------
 
 gaccelhints.go
+appwindow.go
 config.go
 util.go
 consts.go

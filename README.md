@@ -2,7 +2,7 @@
 
 A Go/Gtk application for calculating keyboard accelerators.
 
-**TODO screenshot (to replace the text below)**
+_TODO screenshot (to replace the text below)_
 
 For example, given the input:
 
