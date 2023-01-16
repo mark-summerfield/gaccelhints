@@ -17,14 +17,14 @@ Find & Replace
 
 The application will show:
 
-<b><u>U</u></b>ndo  
-<b><u>R</u></b>edo  
-<b><u>C</u></b>opy  
-Cu<b><u>t</u></b>  
-<b><u>P</u></b>aste  
-<b><u>F</u></b>ind  
-Find <b><u>A</u></b>gain  
-F<u><b><u>i</u></b>nd & Replace  
+<u>U</u>ndo  
+<u>R</u>edo  
+<u>C</u>opy  
+Cu<u>t</u>  
+<u>P</u>aste  
+<u>F</u>ind  
+Find <u>A</u>gain  
+F<u>i</u>nd & Replace  
 
 ?
 
