@@ -21,6 +21,7 @@ func main() {
 		appWindow := newAppWindow(app, config)
 		appWindow.window.Move(config.getPosition())
 		appWindow.window.SetDefaultSize(config.width, config.height)
+		appWindow.onTextChanged()
 		appWindow.window.ShowAll()
 	})
 	os.Exit(app.Run(os.Args))

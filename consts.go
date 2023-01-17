@@ -24,8 +24,18 @@ const (
 	defaultHeight = 480
 
 	sigActivate  = "activate"
+	sigChanged   = "changed"
 	sigConfigure = "configure-event"
 	sigClicked   = "clicked"
 	sigDestroy   = "destroy"
 	sigToggled   = "toggled"
+
+	defaultOriginal = `Undo
+Redo
+Copy
+Cu&t
+Paste
+Find
+Find Again
+Find && Replace`
 )

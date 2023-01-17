@@ -4,6 +4,9 @@
 package main
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/mark-summerfield/accelhint"
@@ -55,6 +58,11 @@ func (me *AppWindow) makeWidgets(app *gtk.Application) {
 	me.originalText, err = gtk.TextViewNew()
 	gong.CheckError("Failed to create text view:", err)
 	me.originalLabel.SetMnemonicWidget(me.originalText)
+	buffer, err := me.originalText.GetBuffer()
+	gong.CheckError("Failed to get text buffer:", err)
+	buffer.SetText(defaultOriginal)
+	start, end := buffer.GetBounds()
+	buffer.SelectRange(start, end)
 	me.hintedLabel, err = gtk.LabelNewWithMnemonic("_Hinted")
 	gong.CheckError("Failed to create label:", err)
 	me.hintedText, err = gtk.TextViewNew()
@@ -134,6 +142,32 @@ func (me *AppWindow) makeConnections() {
 	me.window.Connect(sigDestroy, func(_ *gtk.ApplicationWindow) {
 		me.onQuit()
 	})
+	buffer, err := me.originalText.GetBuffer()
+	gong.CheckError("Failed to get text buffer:", err)
+	buffer.Connect(sigChanged, func(_ *gtk.TextBuffer) {
+		me.onTextChanged()
+	})
+}
+
+func (me *AppWindow) onTextChanged() {
+	buffer, err := me.originalText.GetBuffer()
+	gong.CheckError("Failed to get text buffer:", err)
+	start, end := buffer.GetBounds()
+	text, err := buffer.GetText(start, end, false)
+	gong.CheckError("Failed to get text buffer's text:", err)
+	lines := strings.Split(strings.TrimSpace(text), "\n")
+	hinted, n, err := accelhint.Hinted(lines)
+	if err != nil {
+		me.statusLabel.SetText(fmt.Sprintf("Failed to set accelerators: %s",
+			err))
+	} else {
+		buffer, err = me.hintedText.GetBuffer()
+		gong.CheckError("Failed to get text buffer:", err)
+		// TODO drop &s and use BOLD + UNDERLINE
+		buffer.SetText(strings.Join(hinted, "\n"))
+		me.statusLabel.SetText(fmt.Sprintf("%d/%d — %.0f%%", n, len(lines),
+			(float64(n) / float64(len(lines)) * 100.0)))
+	}
 }
 
 func (me *AppWindow) onQuit() {

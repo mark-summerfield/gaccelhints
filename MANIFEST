@@ -17,9 +17,5 @@ onUnderline()
 - if next char is NOT underlined then underline+bold+navy to next char
 - then call refresh() to recalculate
 
-Users can enter "Find & Replace" as-is since we use styling. (But of 
-course when passing strings to accelhints lib'y, we must &->&& and 
-_->__.)
-
 # TODO align baselines of Underline button & Alphabet label (when API avail)
 
