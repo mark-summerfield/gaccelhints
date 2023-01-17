@@ -15,6 +15,7 @@ import (
 
 type AppWindow struct {
 	config          *Config
+	application     *gtk.Application
 	window          *gtk.ApplicationWindow
 	container       *gtk.Widget
 	originalLabel   *gtk.Label
@@ -24,16 +25,13 @@ type AppWindow struct {
 	underlineButton *gtk.Button
 	alphabetLabel   *gtk.Label
 	alphabetEntry   *gtk.Entry
-	markerFrame     *gtk.Frame
-	ampersandRadio  *gtk.RadioButton
-	underlineRadio  *gtk.RadioButton
 	statusLabel     *gtk.Label
 }
 
 func newAppWindow(app *gtk.Application, config *Config) *AppWindow {
-	appWindow := &AppWindow{}
+	appWindow := &AppWindow{application: app}
 	appWindow.config = config
-	appWindow.makeWidgets(app)
+	appWindow.makeWidgets()
 	appWindow.makeLayout()
 	appWindow.makeConnections()
 	appWindow.window.SetTitle(appName)
@@ -49,9 +47,9 @@ func newAppWindow(app *gtk.Application, config *Config) *AppWindow {
 	return appWindow
 }
 
-func (me *AppWindow) makeWidgets(app *gtk.Application) {
+func (me *AppWindow) makeWidgets() {
 	var err error
-	me.window, err = gtk.ApplicationWindowNew(app)
+	me.window, err = gtk.ApplicationWindowNew(me.application)
 	gong.CheckError("Failed to create window:", err)
 	me.originalLabel, err = gtk.LabelNewWithMnemonic("_Original")
 	gong.CheckError("Failed to create label:", err)
@@ -71,17 +69,6 @@ func (me *AppWindow) makeWidgets(app *gtk.Application) {
 	me.hintedText.SetEditable(false)
 	me.underlineButton, err = gtk.ButtonNewWithMnemonic("_Underline")
 	gong.CheckError("Failed to create button:", err)
-	me.markerFrame, err = gtk.FrameNew("Marker")
-	gong.CheckError("Failed to create frame:", err)
-	me.ampersandRadio, err = gtk.RadioButtonNewWithMnemonic(nil,
-		"_Ampersands")
-	gong.CheckError("Failed to create radio button:", err)
-	me.underlineRadio, err = gtk.RadioButtonNewWithMnemonicFromWidget(
-		me.ampersandRadio, "Under_lines")
-	gong.CheckError("Failed to create radio button:", err)
-	if me.config.marker == accelhint.GtkMarker {
-		me.underlineRadio.SetActive(true)
-	}
 	me.alphabetLabel, err = gtk.LabelNewWithMnemonic("_Alphabet")
 	gong.CheckError("Failed to create label:", err)
 	me.alphabetEntry, err = gtk.EntryNew()
@@ -109,23 +96,11 @@ func (me *AppWindow) makeLayout() {
 	hbox.PackStart(left, true, true, stdMargin)
 	hbox.PackStart(right, true, true, stdMargin)
 	vbox.PackStart(hbox, true, true, stdMargin)
-	left, err = gtk.BoxNew(gtk.ORIENTATION_VERTICAL, stdMargin)
-	gong.CheckError("Failed to create vbox:", err)
-	left.PackStart(me.underlineButton, false, false, stdMargin)
-	left.PackStart(me.alphabetLabel, false, false, stdMargin)
-	right, err = gtk.BoxNew(gtk.ORIENTATION_VERTICAL, stdMargin)
-	gong.CheckError("Failed to create vbox:", err)
-	innerBox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, stdMargin)
-	gong.CheckError("Failed to create hbox:", err)
-	innerBox.PackStart(me.ampersandRadio, false, false, stdMargin)
-	innerBox.PackStart(me.underlineRadio, false, false, stdMargin)
-	me.markerFrame.Add(innerBox)
-	right.PackStart(me.markerFrame, false, false, stdMargin)
-	right.PackStart(me.alphabetEntry, true, true, stdMargin)
 	hbox, err = gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, stdMargin)
 	gong.CheckError("Failed to create hbox:", err)
-	hbox.PackStart(left, false, false, stdMargin)
-	hbox.PackStart(right, true, true, stdMargin)
+	hbox.PackStart(me.underlineButton, false, false, stdMargin)
+	hbox.PackStart(me.alphabetLabel, false, false, stdMargin)
+	hbox.PackStart(me.alphabetEntry, true, true, stdMargin)
 	vbox.PackStart(hbox, false, false, stdMargin)
 	vbox.PackStart(me.statusLabel, false, false, stdMargin)
 	me.container = &vbox.Container.Widget
@@ -138,6 +113,10 @@ func (me *AppWindow) makeConnections() {
 		me.config.updateGeometry(event.X(), event.Y(), event.Width(),
 			event.Height())
 		return false
+	})
+	me.window.Connect("key-press-event", func(_ *gtk.ApplicationWindow,
+		event *gdk.Event) {
+		me.onKeyPress(event)
 	})
 	me.window.Connect(sigDestroy, func(_ *gtk.ApplicationWindow) {
 		me.onQuit()
@@ -170,9 +149,19 @@ func (me *AppWindow) onTextChanged() {
 	}
 }
 
+func (me *AppWindow) onKeyPress(event *gdk.Event) {
+	fmt.Println("onKeyPress")
+	keyEvent := &gdk.EventKey{Event: event}
+	if keyEvent.KeyVal() == gdk.KEY_Escape {
+		fmt.Println("onKeyPress Esc")
+		me.onQuit()
+	}
+}
+
 func (me *AppWindow) onQuit() {
+	fmt.Println("onQuit")
 	if me.config.dirty {
 		me.config.save()
 	}
-	gtk.MainQuit()
+	me.application.Quit()
 }
