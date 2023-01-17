@@ -11,21 +11,21 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/mark-summerfield/accelhint"
 	"github.com/mark-summerfield/gong"
+	"golang.org/x/exp/slices"
 )
 
 type AppWindow struct {
-	config          *Config
-	application     *gtk.Application
-	window          *gtk.ApplicationWindow
-	container       *gtk.Widget
-	originalLabel   *gtk.Label
-	originalText    *gtk.TextView
-	hintedLabel     *gtk.Label
-	hintedText      *gtk.TextView
-	underlineButton *gtk.Button
-	alphabetLabel   *gtk.Label
-	alphabetEntry   *gtk.Entry
-	statusLabel     *gtk.Label
+	config        *Config
+	application   *gtk.Application
+	window        *gtk.ApplicationWindow
+	container     *gtk.Widget
+	originalLabel *gtk.Label
+	originalText  *gtk.TextView
+	hintedLabel   *gtk.Label
+	hintedText    *gtk.TextView
+	alphabetLabel *gtk.Label
+	alphabetEntry *gtk.Entry
+	statusLabel   *gtk.Label
 }
 
 func newAppWindow(app *gtk.Application, config *Config) *AppWindow {
@@ -55,6 +55,8 @@ func (me *AppWindow) makeWidgets() {
 	gong.CheckError("Failed to create label:", err)
 	me.originalText, err = gtk.TextViewNew()
 	gong.CheckError("Failed to create text view:", err)
+	me.originalText.SetHExpand(true)
+	me.originalText.SetVExpand(true)
 	me.originalLabel.SetMnemonicWidget(me.originalText)
 	buffer, err := me.originalText.GetBuffer()
 	gong.CheckError("Failed to get text buffer:", err)
@@ -67,11 +69,12 @@ func (me *AppWindow) makeWidgets() {
 	gong.CheckError("Failed to create text view:", err)
 	me.hintedLabel.SetMnemonicWidget(me.hintedText)
 	me.hintedText.SetEditable(false)
-	me.underlineButton, err = gtk.ButtonNewWithMnemonic("_Underline")
-	gong.CheckError("Failed to create button:", err)
+	me.hintedText.SetHExpand(true)
+	me.hintedText.SetVExpand(true)
 	me.alphabetLabel, err = gtk.LabelNewWithMnemonic("_Alphabet")
 	gong.CheckError("Failed to create label:", err)
 	me.alphabetEntry, err = gtk.EntryNew()
+	me.alphabetEntry.SetHExpand(true)
 	gong.CheckError("Failed to create entry:", err)
 	me.alphabetLabel.SetMnemonicWidget(me.alphabetEntry)
 	me.alphabetEntry.SetText(me.config.alphabet)
@@ -86,11 +89,17 @@ func (me *AppWindow) makeLayout() {
 	left, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, stdMargin)
 	gong.CheckError("Failed to create vbox:", err)
 	left.PackStart(me.originalLabel, false, false, stdMargin)
-	left.PackStart(me.originalText, true, true, stdMargin)
+	scroller, err := gtk.ScrolledWindowNew(nil, nil)
+	gong.CheckError("Failed to create scroller:", err)
+	scroller.Add(me.originalText)
+	left.PackStart(scroller, true, true, stdMargin)
 	right, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, stdMargin)
 	gong.CheckError("Failed to create vbox:", err)
 	right.PackStart(me.hintedLabel, false, false, stdMargin)
-	right.PackStart(me.hintedText, true, true, stdMargin)
+	scroller, err = gtk.ScrolledWindowNew(nil, nil)
+	gong.CheckError("Failed to create scroller:", err)
+	scroller.Add(me.hintedText)
+	right.PackStart(scroller, true, true, stdMargin)
 	hbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, stdMargin)
 	gong.CheckError("Failed to create hbox:", err)
 	hbox.PackStart(left, true, true, stdMargin)
@@ -98,7 +107,6 @@ func (me *AppWindow) makeLayout() {
 	vbox.PackStart(hbox, true, true, stdMargin)
 	hbox, err = gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, stdMargin)
 	gong.CheckError("Failed to create hbox:", err)
-	hbox.PackStart(me.underlineButton, false, false, stdMargin)
 	hbox.PackStart(me.alphabetLabel, false, false, stdMargin)
 	hbox.PackStart(me.alphabetEntry, true, true, stdMargin)
 	vbox.PackStart(hbox, false, false, stdMargin)
@@ -121,6 +129,9 @@ func (me *AppWindow) makeConnections() {
 	me.window.Connect(sigDestroy, func(_ *gtk.ApplicationWindow) {
 		me.onQuit()
 	})
+	me.alphabetEntry.Connect(sigChanged, func(_ *gtk.Entry) {
+		me.onTextChanged()
+	})
 	buffer, err := me.originalText.GetBuffer()
 	gong.CheckError("Failed to get text buffer:", err)
 	buffer.Connect(sigChanged, func(_ *gtk.TextBuffer) {
@@ -129,37 +140,66 @@ func (me *AppWindow) makeConnections() {
 }
 
 func (me *AppWindow) onTextChanged() {
+	alphabet, err := me.alphabetEntry.GetText()
+	alphabet = strings.ToUpper(strings.TrimSpace(alphabet))
+	me.alphabetEntry.SetText(alphabet)
+	gong.CheckError("Failed to get text:", err)
 	buffer, err := me.originalText.GetBuffer()
 	gong.CheckError("Failed to get text buffer:", err)
 	start, end := buffer.GetBounds()
 	text, err := buffer.GetText(start, end, false)
 	gong.CheckError("Failed to get text buffer's text:", err)
 	lines := strings.Split(strings.TrimSpace(text), "\n")
-	hinted, n, err := accelhint.Hinted(lines)
+	hinted, n, err := accelhint.HintedX(lines, '&', alphabet)
 	if err != nil {
 		me.statusLabel.SetText(fmt.Sprintf("Failed to set accelerators: %s",
 			err))
 	} else {
 		buffer, err = me.hintedText.GetBuffer()
 		gong.CheckError("Failed to get text buffer:", err)
-		// TODO drop &s and use BOLD + UNDERLINE
-		buffer.SetText(strings.Join(hinted, "\n"))
+		start, end := buffer.GetBounds()
+		buffer.Delete(start, end)
+		for i := 0; i < len(hinted); i++ {
+			chars := []rune(strings.ReplaceAll(hinted[i], escMarker,
+				placeholder))
+			j := slices.Index(chars, rune('&'))
+			if j > -1 && j+1 < len(chars) {
+				left := strings.ReplaceAll(string(chars[:j]), placeholder,
+					escMarker)
+				accel := string(chars[j+1])
+				right := ""
+				if j+2 < len(chars) {
+					right = strings.ReplaceAll(string(chars[j+2:]),
+						placeholder, escMarker)
+				}
+				start = buffer.GetEndIter()
+				buffer.InsertMarkup(start, fmt.Sprintf(
+					"<span color='gray'>%d</span>\t", j))
+				buffer.InsertAtCursor(left)
+				start = buffer.GetEndIter()
+				buffer.InsertMarkup(start, fmt.Sprintf(
+					"<span color='blue' underline='single'>%s</span>",
+					accel))
+				buffer.InsertAtCursor(right)
+				buffer.InsertAtCursor("\n")
+			} else {
+				buffer.InsertAtCursor("\t" + strings.ReplaceAll(
+					string(chars), placeholder, escMarker) + "\n")
+			}
+		}
 		me.statusLabel.SetText(fmt.Sprintf("%d/%d — %.0f%%", n, len(lines),
 			(float64(n) / float64(len(lines)) * 100.0)))
 	}
 }
 
 func (me *AppWindow) onKeyPress(event *gdk.Event) {
-	fmt.Println("onKeyPress")
 	keyEvent := &gdk.EventKey{Event: event}
 	if keyEvent.KeyVal() == gdk.KEY_Escape {
-		fmt.Println("onKeyPress Esc")
 		me.onQuit()
 	}
 }
 
 func (me *AppWindow) onQuit() {
-	fmt.Println("onQuit")
 	if me.config.dirty {
 		me.config.save()
 	}

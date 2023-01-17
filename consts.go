@@ -18,6 +18,9 @@ const (
 	appName        = "gAccelHints"
 	configFilename = "gaccelhints.ini"
 	icon           = "images/accelhint.svg"
+	accelTag       = "accel"
+	escMarker      = "&&"
+	placeholder    = "||"
 
 	stdMargin     = 6
 	defaultWidth  = 640
