@@ -9,13 +9,3 @@ go.mod
 README.md
 
 st.sh
-
--------------------------------------
-onUnderline()
-- save line & pos & whether next char is underlined
-- clear styling for whole line
-- if next char is NOT underlined then underline+bold+navy to next char
-- then call refresh() to recalculate
-
-# TODO align baselines of Underline button & Alphabet label (when API avail)
-
