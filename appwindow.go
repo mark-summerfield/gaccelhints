@@ -141,9 +141,13 @@ func (me *AppWindow) makeConnections() {
 
 func (me *AppWindow) onTextChanged() {
 	alphabet, err := me.alphabetEntry.GetText()
-	alphabet = strings.ToUpper(strings.TrimSpace(alphabet))
-	me.alphabetEntry.SetText(alphabet)
 	gong.CheckError("Failed to get text:", err)
+	if len(alphabet) < 5 {
+		alphabet = accelhint.Alphabet
+	} else {
+		alphabet = strings.ToUpper(strings.TrimSpace(alphabet))
+	}
+	me.alphabetEntry.SetText(alphabet)
 	buffer, err := me.originalText.GetBuffer()
 	gong.CheckError("Failed to get text buffer:", err)
 	start, end := buffer.GetBounds()
