@@ -80,7 +80,7 @@ func (me *AppWindow) makeWidgets() {
 	gong.CheckError("Failed to create entry:", err)
 	me.alphabetLabel.SetMnemonicWidget(me.alphabetEntry)
 	me.alphabetEntry.SetText(me.config.alphabet)
-	me.statusLabel, err = gtk.LabelNew("Ready (" + versionInfo() + ")")
+	me.statusLabel, err = gtk.LabelNew("")
 	gong.CheckError("Failed to create label:", err)
 	me.statusLabel.SetXAlign(0.0)
 }
@@ -155,16 +155,22 @@ func (me *AppWindow) onTextChanged() {
 	start, end := buffer.GetBounds()
 	text, err := buffer.GetText(start, end, false)
 	gong.CheckError("Failed to get text buffer's text:", err)
+	buffer, err = me.hintedText.GetBuffer()
+	gong.CheckError("Failed to get text buffer:", err)
+	start, end = buffer.GetBounds()
+	buffer.Delete(start, end)
 	lines := strings.Split(strings.TrimSpace(text), "\n")
+	if text == "" {
+		me.statusLabel.SetMarkup("Enter items… <span color='gray'>(" +
+			versionInfo() + ")</span>")
+		return
+	}
 	hinted, n, err := accelhint.HintedX(lines, '&', alphabet)
 	if err != nil {
-		me.statusLabel.SetText(fmt.Sprintf("Failed to set accelerators: %s",
-			err))
+		me.statusLabel.SetMarkup(fmt.Sprintf(
+			"<span color='darkred'>Failed to set accelerators:</span> "+
+				"<span color='red'>%s</span>", err))
 	} else {
-		buffer, err = me.hintedText.GetBuffer()
-		gong.CheckError("Failed to get text buffer:", err)
-		start, end := buffer.GetBounds()
-		buffer.Delete(start, end)
 		for i := 0; i < len(hinted); i++ {
 			chars := []rune(strings.ReplaceAll(hinted[i], escMarker,
 				placeholder))
@@ -193,8 +199,9 @@ func (me *AppWindow) onTextChanged() {
 					string(chars), placeholder, escMarker) + "\n")
 			}
 		}
-		me.statusLabel.SetText(fmt.Sprintf("%d/%d — %.0f%%", n, len(lines),
-			(float64(n) / float64(len(lines)) * 100.0)))
+		me.statusLabel.SetMarkup(fmt.Sprintf(
+			"<span color='darkgreen'>Hinted — %d/%d — %.0f%%</span>", n,
+			len(lines), (float64(n) / float64(len(lines)) * 100.0)))
 	}
 }
 
