@@ -19,8 +19,14 @@ type AppWindow struct {
 	application   *gtk.Application
 	window        *gtk.ApplicationWindow
 	container     *gtk.Widget
-	toolbar       *gtk.Toolbar
+	toolFrame     *gtk.Frame
+	undoButton    *gtk.ToolButton
+	redoButton    *gtk.ToolButton
 	copyButton    *gtk.ToolButton
+	cutButton     *gtk.ToolButton
+	pasteButton   *gtk.ToolButton
+	aboutButton   *gtk.ToolButton
+	quitButton    *gtk.ToolButton
 	originalLabel *gtk.Label
 	originalText  *gtk.TextView
 	hintedLabel   *gtk.Label
@@ -37,11 +43,12 @@ func newAppWindow(app *gtk.Application, config *Config) *AppWindow {
 	appWindow.makeLayout()
 	appWindow.makeConnections()
 	appWindow.window.SetTitle(appName)
-	if img := getPixbuf(icon); img != nil {
+	if img := getPixbuf(icon, 0); img != nil {
 		appWindow.window.SetIcon(img)
 	}
 	appWindow.window.SetBorderWidth(stdMargin)
 	appWindow.window.Add(appWindow.container)
+	appWindow.originalText.GrabFocus()
 	return appWindow
 }
 
@@ -49,12 +56,49 @@ func (me *AppWindow) makeWidgets() {
 	var err error
 	me.window, err = gtk.ApplicationWindowNew(me.application)
 	gong.CheckError("Failed to create window:", err)
-	me.toolbar, err = gtk.ToolbarNew()
-	gong.CheckError("Failed to create toolbar:", err)
+	me.toolFrame, err = gtk.FrameNew("")
+	gong.CheckError("Failed to create frame:", err)
+	if img := getImage(iconUndo); img != nil {
+		me.undoButton, err = gtk.ToolButtonNew(img, "Undo")
+		gong.CheckError("Failed to create button:", err)
+		me.undoButton.SetTooltipMarkup("<b>Undo</b> Ctrl+Z")
+		me.undoButton.SetCanFocus(true)
+	}
+	if img := getImage(iconRedo); img != nil {
+		me.redoButton, err = gtk.ToolButtonNew(img, "Redo")
+		gong.CheckError("Failed to create button:", err)
+		me.redoButton.SetTooltipMarkup("<b>Redo</b> Ctrl+Y")
+		me.redoButton.SetCanFocus(true)
+	}
 	if img := getImage(iconCopy); img != nil {
 		me.copyButton, err = gtk.ToolButtonNew(img, "Copy")
 		gong.CheckError("Failed to create button:", err)
 		me.copyButton.SetTooltipMarkup("<b>Copy</b> Ctrl+C")
+		me.copyButton.SetCanFocus(true)
+	}
+	if img := getImage(iconCut); img != nil {
+		me.cutButton, err = gtk.ToolButtonNew(img, "Cut")
+		gong.CheckError("Failed to create button:", err)
+		me.cutButton.SetTooltipMarkup("<b>Cut</b> Ctrl+X")
+		me.cutButton.SetCanFocus(true)
+	}
+	if img := getImage(iconPaste); img != nil {
+		me.pasteButton, err = gtk.ToolButtonNew(img, "Paste")
+		gong.CheckError("Failed to create button:", err)
+		me.pasteButton.SetTooltipMarkup("<b>Paste</b> Ctrl+V")
+		me.pasteButton.SetCanFocus(true)
+	}
+	if img := getImage(icon); img != nil {
+		me.aboutButton, err = gtk.ToolButtonNew(img, "About")
+		gong.CheckError("Failed to create button:", err)
+		me.aboutButton.SetTooltipMarkup("<b>About</b>")
+		me.aboutButton.SetCanFocus(true)
+	}
+	if img := getImage(iconQuit); img != nil {
+		me.quitButton, err = gtk.ToolButtonNew(img, "Quit")
+		gong.CheckError("Failed to create button:", err)
+		me.quitButton.SetTooltipMarkup("<b>Quit</b> Esc <i>or</i> Ctrl+Q")
+		me.quitButton.SetCanFocus(true)
 	}
 	me.originalLabel, err = gtk.LabelNewWithMnemonic("_Original")
 	gong.CheckError("Failed to create label:", err)
@@ -93,8 +137,17 @@ func (me *AppWindow) makeWidgets() {
 func (me *AppWindow) makeLayout() {
 	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, stdMargin)
 	gong.CheckError("Failed to create vbox:", err)
-	vbox.PackStart(me.toolbar, false, false, stdMargin)
-	me.toolbar.Insert(me.copyButton, 0)
+	toolbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, stdMargin)
+	gong.CheckError("Failed to create hbox:", err)
+	toolbox.PackStart(me.undoButton, false, false, 0)
+	toolbox.PackStart(me.redoButton, false, false, 0)
+	toolbox.PackStart(me.copyButton, false, false, 0)
+	toolbox.PackStart(me.cutButton, false, false, 0)
+	toolbox.PackStart(me.pasteButton, false, false, 0)
+	toolbox.PackStart(me.aboutButton, false, false, 0)
+	toolbox.PackEnd(me.quitButton, false, false, 0)
+	me.toolFrame.Add(toolbox)
+	vbox.PackStart(me.toolFrame, false, false, stdMargin)
 	left, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, stdMargin)
 	gong.CheckError("Failed to create vbox:", err)
 	left.PackStart(me.originalLabel, false, false, stdMargin)
@@ -138,8 +191,26 @@ func (me *AppWindow) makeConnections() {
 	me.window.Connect(sigDestroy, func(_ *gtk.ApplicationWindow) {
 		me.onQuit()
 	})
+	me.undoButton.Connect(sigClicked, func() {
+		me.onUndo()
+	})
+	me.redoButton.Connect(sigClicked, func() {
+		me.onRedo()
+	})
 	me.copyButton.Connect(sigClicked, func() {
 		me.onCopy()
+	})
+	me.cutButton.Connect(sigClicked, func() {
+		me.onCut()
+	})
+	me.pasteButton.Connect(sigClicked, func() {
+		me.onPaste()
+	})
+	me.aboutButton.Connect(sigClicked, func() {
+		me.onAbout()
+	})
+	me.quitButton.Connect(sigClicked, func() {
+		me.onQuit()
 	})
 	me.alphabetEntry.Connect(sigChanged, func(_ *gtk.Entry) {
 		me.onTextChanged()
@@ -220,8 +291,6 @@ func (me *AppWindow) onKeyPress(event *gdk.Event) {
 	keyVal := keyEvent.KeyVal()
 	if (keyEvent.State() & gdk.CONTROL_MASK) != 0 {
 		switch keyVal {
-		case gdk.KEY_C, gdk.KEY_c:
-			me.onCopy()
 		case gdk.KEY_Q, gdk.KEY_q:
 			me.onQuit()
 		}
@@ -230,8 +299,28 @@ func (me *AppWindow) onKeyPress(event *gdk.Event) {
 	}
 }
 
+func (me *AppWindow) onUndo() {
+	fmt.Println("onUndo") // TODO
+}
+
+func (me *AppWindow) onRedo() {
+	fmt.Println("onRedo") // TODO
+}
+
 func (me *AppWindow) onCopy() {
 	fmt.Println("onCopy") // TODO
+}
+
+func (me *AppWindow) onCut() {
+	fmt.Println("onCut") // TODO
+}
+
+func (me *AppWindow) onPaste() {
+	fmt.Println("onPaste") // TODO
+}
+
+func (me *AppWindow) onAbout() {
+	fmt.Println("onAbout") // TODO
 }
 
 func (me *AppWindow) onQuit() {
@@ -241,19 +330,24 @@ func (me *AppWindow) onQuit() {
 	me.application.Quit()
 }
 
-func getPixbuf(name string) *gdk.Pixbuf {
+func getPixbuf(name string, size int) *gdk.Pixbuf {
 	raw, err := Images.ReadFile(name)
 	if err == nil {
 		img, err := gdk.PixbufNewFromBytesOnly(raw)
 		if err == nil {
-			return img
+			if size > 0 {
+				img, err = img.ScaleSimple(size, size, gdk.INTERP_NEAREST)
+			}
+			if err == nil {
+				return img
+			}
 		}
 	}
 	return nil
 }
 
 func getImage(name string) *gtk.Image {
-	if pixbuf := getPixbuf(name); pixbuf != nil {
+	if pixbuf := getPixbuf(name, iconSize); pixbuf != nil {
 		if img, err := gtk.ImageNewFromPixbuf(pixbuf); err == nil {
 			return img
 		}

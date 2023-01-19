@@ -1,6 +1,4 @@
-# - Add toolbar (with tooltips):
-#   [Undo] [Redo] [Copy] [Cut] [Paste] [About]       [Quit]
-#   tooltips "Undo ^Z" etc.
+# - Implement toolbar actions
 # - Support undo/redo (with ^Z & ^Y actions), e.g., push initial
 #   original text to stack, then onChange push to stack & on undo & on
 #   redo ...
