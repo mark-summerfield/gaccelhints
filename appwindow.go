@@ -15,10 +15,11 @@ import (
 )
 
 type AppWindow struct {
-	config        *Config
-	application   *gtk.Application
-	window        *gtk.ApplicationWindow
-	container     *gtk.Widget
+	config      *Config
+	application *gtk.Application
+	window      *gtk.ApplicationWindow
+	container   *gtk.Widget
+	//	toolbar       *gtk.Toolbar
 	originalLabel *gtk.Label
 	originalText  *gtk.TextView
 	hintedLabel   *gtk.Label
@@ -207,7 +208,13 @@ func (me *AppWindow) onTextChanged() {
 
 func (me *AppWindow) onKeyPress(event *gdk.Event) {
 	keyEvent := &gdk.EventKey{Event: event}
-	if keyEvent.KeyVal() == gdk.KEY_Escape {
+	keyVal := keyEvent.KeyVal()
+	if (keyEvent.State() & gdk.CONTROL_MASK) != 0 {
+		switch keyVal {
+		case gdk.KEY_Q, gdk.KEY_q:
+			me.onQuit()
+		}
+	} else if keyVal == gdk.KEY_Escape {
 		me.onQuit()
 	}
 }
