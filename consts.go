@@ -18,6 +18,7 @@ const (
 	appName        = "gAccelHints"
 	configFilename = "gaccelhints.ini"
 	icon           = "images/accelhint.svg"
+	iconCopy       = "images/edit-copy.svg"
 	accelTag       = "accel"
 	escMarker      = "&&"
 	placeholder    = "||"
@@ -31,6 +32,7 @@ const (
 	sigConfigure = "configure-event"
 	sigClicked   = "clicked"
 	sigDestroy   = "destroy"
+	sigKeyPress  = "key-press-event"
 	sigToggled   = "toggled"
 
 	defaultOriginal = `Undo

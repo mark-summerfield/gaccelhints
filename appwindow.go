@@ -15,11 +15,12 @@ import (
 )
 
 type AppWindow struct {
-	config      *Config
-	application *gtk.Application
-	window      *gtk.ApplicationWindow
-	container   *gtk.Widget
-	//	toolbar       *gtk.Toolbar
+	config        *Config
+	application   *gtk.Application
+	window        *gtk.ApplicationWindow
+	container     *gtk.Widget
+	toolbar       *gtk.Toolbar
+	copyButton    *gtk.ToolButton
 	originalLabel *gtk.Label
 	originalText  *gtk.TextView
 	hintedLabel   *gtk.Label
@@ -36,12 +37,8 @@ func newAppWindow(app *gtk.Application, config *Config) *AppWindow {
 	appWindow.makeLayout()
 	appWindow.makeConnections()
 	appWindow.window.SetTitle(appName)
-	raw, err := Images.ReadFile(icon)
-	if err == nil {
-		img, err := gdk.PixbufNewFromBytesOnly(raw)
-		if err == nil {
-			appWindow.window.SetIcon(img)
-		}
+	if img := getPixbuf(icon); img != nil {
+		appWindow.window.SetIcon(img)
 	}
 	appWindow.window.SetBorderWidth(stdMargin)
 	appWindow.window.Add(appWindow.container)
@@ -52,6 +49,13 @@ func (me *AppWindow) makeWidgets() {
 	var err error
 	me.window, err = gtk.ApplicationWindowNew(me.application)
 	gong.CheckError("Failed to create window:", err)
+	me.toolbar, err = gtk.ToolbarNew()
+	gong.CheckError("Failed to create toolbar:", err)
+	if img := getImage(iconCopy); img != nil {
+		me.copyButton, err = gtk.ToolButtonNew(img, "Copy")
+		gong.CheckError("Failed to create button:", err)
+		me.copyButton.SetTooltipMarkup("<b>Copy</b> Ctrl+C")
+	}
 	me.originalLabel, err = gtk.LabelNewWithMnemonic("_Original")
 	gong.CheckError("Failed to create label:", err)
 	me.originalText, err = gtk.TextViewNew()
@@ -89,6 +93,8 @@ func (me *AppWindow) makeWidgets() {
 func (me *AppWindow) makeLayout() {
 	vbox, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, stdMargin)
 	gong.CheckError("Failed to create vbox:", err)
+	vbox.PackStart(me.toolbar, false, false, stdMargin)
+	me.toolbar.Insert(me.copyButton, 0)
 	left, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, stdMargin)
 	gong.CheckError("Failed to create vbox:", err)
 	left.PackStart(me.originalLabel, false, false, stdMargin)
@@ -125,12 +131,15 @@ func (me *AppWindow) makeConnections() {
 			event.Height())
 		return false
 	})
-	me.window.Connect("key-press-event", func(_ *gtk.ApplicationWindow,
+	me.window.Connect(sigKeyPress, func(_ *gtk.ApplicationWindow,
 		event *gdk.Event) {
 		me.onKeyPress(event)
 	})
 	me.window.Connect(sigDestroy, func(_ *gtk.ApplicationWindow) {
 		me.onQuit()
+	})
+	me.copyButton.Connect(sigClicked, func() {
+		me.onCopy()
 	})
 	me.alphabetEntry.Connect(sigChanged, func(_ *gtk.Entry) {
 		me.onTextChanged()
@@ -211,6 +220,8 @@ func (me *AppWindow) onKeyPress(event *gdk.Event) {
 	keyVal := keyEvent.KeyVal()
 	if (keyEvent.State() & gdk.CONTROL_MASK) != 0 {
 		switch keyVal {
+		case gdk.KEY_C, gdk.KEY_c:
+			me.onCopy()
 		case gdk.KEY_Q, gdk.KEY_q:
 			me.onQuit()
 		}
@@ -219,9 +230,33 @@ func (me *AppWindow) onKeyPress(event *gdk.Event) {
 	}
 }
 
+func (me *AppWindow) onCopy() {
+	fmt.Println("onCopy") // TODO
+}
+
 func (me *AppWindow) onQuit() {
 	if me.config.dirty {
 		me.config.save()
 	}
 	me.application.Quit()
+}
+
+func getPixbuf(name string) *gdk.Pixbuf {
+	raw, err := Images.ReadFile(name)
+	if err == nil {
+		img, err := gdk.PixbufNewFromBytesOnly(raw)
+		if err == nil {
+			return img
+		}
+	}
+	return nil
+}
+
+func getImage(name string) *gtk.Image {
+	if pixbuf := getPixbuf(name); pixbuf != nil {
+		if img, err := gtk.ImageNewFromPixbuf(pixbuf); err == nil {
+			return img
+		}
+	}
+	return nil
 }
