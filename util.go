@@ -10,6 +10,7 @@ import (
 
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
+	"github.com/mark-summerfield/gong"
 )
 
 func maxInt(a, b int) int {
@@ -24,6 +25,17 @@ func versionInfo() string {
 		strings.TrimSpace(Version),
 		strings.TrimPrefix(runtime.Version(), "go"), gtk.GetMajorVersion(),
 		gtk.GetMinorVersion(), gtk.GetMicroVersion())
+}
+
+func makeToolbutton(icon, name, tooltip string) *gtk.ToolButton {
+	if img := getImage(icon); img != nil {
+		button, err := gtk.ToolButtonNew(img, name)
+		gong.CheckError("Failed to create toolbutton:", err)
+		button.SetTooltipMarkup(tooltip)
+		button.SetCanFocus(true)
+		return button
+	}
+	return nil
 }
 
 func getPixbuf(name string, size int) *gdk.Pixbuf {
