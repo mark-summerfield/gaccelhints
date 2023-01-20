@@ -1,7 +1,9 @@
-# - Implement toolbar actions
-# - Support undo/redo (with ^Z & ^Y actions), e.g., push initial
-#   original text to stack, then onChange push to stack & on undo & on
-#   redo ...
+# - Implement:
+#   . About
+#   . Undo ^Z
+#   . Redo ^Y
+#   e.g., push initial original text to stack, then onChange push to
+#   stack & on undo & on redo ...
 
 gaccelhints.go
 appwindow.go

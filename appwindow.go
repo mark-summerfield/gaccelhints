@@ -293,6 +293,10 @@ func (me *AppWindow) onKeyPress(event *gdk.Event) {
 		switch keyVal {
 		case gdk.KEY_Q, gdk.KEY_q:
 			me.onQuit()
+		case gdk.KEY_Y, gdk.KEY_y:
+			me.onRedo()
+		case gdk.KEY_Z, gdk.KEY_z:
+			me.onUndo()
 		}
 	} else if keyVal == gdk.KEY_Escape {
 		me.onQuit()
@@ -308,15 +312,31 @@ func (me *AppWindow) onRedo() {
 }
 
 func (me *AppWindow) onCopy() {
-	fmt.Println("onCopy") // TODO
+	buffer, err := me.originalText.GetBuffer()
+	gong.CheckError("Failed to get text buffer:", err)
+	atom := gdk.GdkAtomIntern("CLIPBOARD", false)
+	clipboard, err := gtk.ClipboardGet(atom)
+	gong.CheckError("Failed to get clipboard:", err)
+	buffer.CopyClipboard(clipboard)
 }
 
 func (me *AppWindow) onCut() {
-	fmt.Println("onCut") // TODO
+	buffer, err := me.originalText.GetBuffer()
+	gong.CheckError("Failed to get text buffer:", err)
+	atom := gdk.GdkAtomIntern("CLIPBOARD", false)
+	clipboard, err := gtk.ClipboardGet(atom)
+	gong.CheckError("Failed to get clipboard:", err)
+	buffer.CutClipboard(clipboard, true)
 }
 
 func (me *AppWindow) onPaste() {
-	fmt.Println("onPaste") // TODO
+	buffer, err := me.originalText.GetBuffer()
+	gong.CheckError("Failed to get text buffer:", err)
+	atom := gdk.GdkAtomIntern("CLIPBOARD", false)
+	clipboard, err := gtk.ClipboardGet(atom)
+	gong.CheckError("Failed to get clipboard:", err)
+	pos := buffer.GetIterAtMark(buffer.GetInsert())
+	buffer.PasteClipboard(clipboard, pos, true)
 }
 
 func (me *AppWindow) onAbout() {
@@ -328,29 +348,4 @@ func (me *AppWindow) onQuit() {
 		me.config.save()
 	}
 	me.application.Quit()
-}
-
-func getPixbuf(name string, size int) *gdk.Pixbuf {
-	raw, err := Images.ReadFile(name)
-	if err == nil {
-		img, err := gdk.PixbufNewFromBytesOnly(raw)
-		if err == nil {
-			if size > 0 {
-				img, err = img.ScaleSimple(size, size, gdk.INTERP_NEAREST)
-			}
-			if err == nil {
-				return img
-			}
-		}
-	}
-	return nil
-}
-
-func getImage(name string) *gtk.Image {
-	if pixbuf := getPixbuf(name, iconSize); pixbuf != nil {
-		if img, err := gtk.ImageNewFromPixbuf(pixbuf); err == nil {
-			return img
-		}
-	}
-	return nil
 }
