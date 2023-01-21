@@ -33,8 +33,8 @@ func NewConfig() *Config {
 		xdec: 0, ydec: 0, alphabet: accelhint.Alphabet,
 		marker: accelhint.Marker}
 	found, filename := getConfigFilename()
+	config.filename = filename // for saving whether found or not
 	if found {
-		config.filename = filename
 		config.load()
 	}
 	return &config

@@ -2,8 +2,8 @@
 #   . About
 #   . Undo ^Z
 #   . Redo ^Y
-#   e.g., push initial original text to stack, then onChange push to
-#   stack & on undo & on redo ...
+#   e.g., push initial original text & cursor pos to stack,
+#   then onChange push text & cursor pos to stack & on undo & on redo ...
 
 gaccelhints.go
 appwindow.go
