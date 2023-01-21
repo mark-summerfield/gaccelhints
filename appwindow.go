@@ -281,29 +281,26 @@ func (me *AppWindow) onRedo() {
 func (me *AppWindow) onCopy() {
 	buffer, err := me.originalText.GetBuffer()
 	gong.CheckError("Failed to get text buffer:", err)
-	atom := gdk.GdkAtomIntern("CLIPBOARD", false)
-	clipboard, err := gtk.ClipboardGet(atom)
-	gong.CheckError("Failed to get clipboard:", err)
-	buffer.CopyClipboard(clipboard)
+	if clipboard := getClipboard(); clipboard != nil {
+		buffer.CopyClipboard(clipboard)
+	}
 }
 
 func (me *AppWindow) onCut() {
 	buffer, err := me.originalText.GetBuffer()
 	gong.CheckError("Failed to get text buffer:", err)
-	atom := gdk.GdkAtomIntern("CLIPBOARD", false)
-	clipboard, err := gtk.ClipboardGet(atom)
-	gong.CheckError("Failed to get clipboard:", err)
-	buffer.CutClipboard(clipboard, true)
+	if clipboard := getClipboard(); clipboard != nil {
+		buffer.CutClipboard(clipboard, true)
+	}
 }
 
 func (me *AppWindow) onPaste() {
 	buffer, err := me.originalText.GetBuffer()
 	gong.CheckError("Failed to get text buffer:", err)
-	atom := gdk.GdkAtomIntern("CLIPBOARD", false)
-	clipboard, err := gtk.ClipboardGet(atom)
-	gong.CheckError("Failed to get clipboard:", err)
-	pos := buffer.GetIterAtMark(buffer.GetInsert())
-	buffer.PasteClipboard(clipboard, pos, true)
+	if clipboard := getClipboard(); clipboard != nil {
+		pos := buffer.GetIterAtMark(buffer.GetInsert())
+		buffer.PasteClipboard(clipboard, pos, true)
+	}
 }
 
 func (me *AppWindow) onAbout() {

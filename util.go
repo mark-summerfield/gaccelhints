@@ -62,3 +62,12 @@ func getImage(name string) *gtk.Image {
 	}
 	return nil
 }
+
+func getClipboard() *gtk.Clipboard {
+	atom := gdk.GdkAtomIntern("CLIPBOARD", false)
+	clipboard, err := gtk.ClipboardGet(atom)
+	if err != nil {
+		return nil
+	}
+	return clipboard
+}
