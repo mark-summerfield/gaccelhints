@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
@@ -20,8 +21,6 @@ type AppWindow struct {
 	window        *gtk.ApplicationWindow
 	container     *gtk.Widget
 	toolFrame     *gtk.Frame
-	undoButton    *gtk.ToolButton
-	redoButton    *gtk.ToolButton
 	copyButton    *gtk.ToolButton
 	cutButton     *gtk.ToolButton
 	pasteButton   *gtk.ToolButton
@@ -95,8 +94,6 @@ func (me *AppWindow) makeToolbar() {
 	var err error
 	me.toolFrame, err = gtk.FrameNew("")
 	gong.CheckError("Failed to create frame:", err)
-	me.undoButton = makeToolbutton(iconUndo, "Undo", "<b>Undo</b> Ctrl+Z")
-	me.redoButton = makeToolbutton(iconRedo, "Redo", "<b>Redo</b> Ctrl+Y")
 	me.copyButton = makeToolbutton(iconCopy, "Copy", "<b>Copy</b> Ctrl+C")
 	me.cutButton = makeToolbutton(iconCut, "Cut", "<b>Cut</b> Ctrl+X")
 	me.pasteButton = makeToolbutton(iconPaste, "Paste",
@@ -141,8 +138,6 @@ func (me *AppWindow) makeLayout() {
 func (me *AppWindow) makeToolbarLayout(vbox *gtk.Box) {
 	toolbox, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, stdMargin)
 	gong.CheckError("Failed to create hbox:", err)
-	toolbox.PackStart(me.undoButton, false, false, 0)
-	toolbox.PackStart(me.redoButton, false, false, 0)
 	toolbox.PackStart(me.copyButton, false, false, 0)
 	toolbox.PackStart(me.cutButton, false, false, 0)
 	toolbox.PackStart(me.pasteButton, false, false, 0)
@@ -167,8 +162,6 @@ func (me *AppWindow) makeConnections() {
 	me.window.Connect(sigDestroy, func(_ *gtk.ApplicationWindow) {
 		me.onQuit()
 	})
-	me.undoButton.Connect(sigClicked, func() { me.onUndo() })
-	me.redoButton.Connect(sigClicked, func() { me.onRedo() })
 	me.copyButton.Connect(sigClicked, func() { me.onCopy() })
 	me.cutButton.Connect(sigClicked, func() { me.onCut() })
 	me.pasteButton.Connect(sigClicked, func() { me.onPaste() })
@@ -204,8 +197,7 @@ func (me *AppWindow) onTextChanged() {
 	buffer.Delete(start, end)
 	lines := strings.Split(strings.TrimSpace(text), "\n")
 	if text == "" {
-		me.statusLabel.SetMarkup("Enter items… <span color='gray'>(" +
-			versionInfo() + ")</span>")
+		me.statusLabel.SetMarkup("Enter items…")
 		return
 	}
 	hinted, n, err := accelhint.HintedX(lines, '&', alphabet)
@@ -260,22 +252,10 @@ func (me *AppWindow) onKeyPress(event *gdk.Event) {
 		switch keyVal {
 		case gdk.KEY_Q, gdk.KEY_q:
 			me.onQuit()
-		case gdk.KEY_Y, gdk.KEY_y:
-			me.onRedo()
-		case gdk.KEY_Z, gdk.KEY_z:
-			me.onUndo()
 		}
 	} else if keyVal == gdk.KEY_Escape {
 		me.onQuit()
 	}
-}
-
-func (me *AppWindow) onUndo() {
-	fmt.Println("onUndo") // TODO
-}
-
-func (me *AppWindow) onRedo() {
-	fmt.Println("onRedo") // TODO
 }
 
 func (me *AppWindow) onCopy() {
@@ -304,7 +284,27 @@ func (me *AppWindow) onPaste() {
 }
 
 func (me *AppWindow) onAbout() {
-	fmt.Println("onAbout") // TODO
+	dlg, err := gtk.AboutDialogNew()
+	gong.CheckError("Failed to create about dialog:", err)
+	dlg.SetTitle(appName) // doesn't work
+	dlg.SetProgramName(appName)
+	dlg.SetVersion(strings.TrimSpace(Version))
+	dlg.SetWebsite("https://github.com/mark-summerfield/gaccelhints")
+	dlg.SetWebsiteLabel("github gaccelhints")
+	dlg.SetComments("An application for efficiently calculating keyboard " +
+		"accelerators.\n" + libInfo())
+	year := time.Now().Year()
+	yearStr := "2022"
+	if year > 2022 {
+		yearStr = fmt.Sprintf("%s-%d", yearStr, year-2000)
+	}
+	dlg.SetCopyright(fmt.Sprintf(
+		"Copyright © %s Mark Summerfield. All rights reserved.", yearStr))
+	dlg.SetLicenseType(gtk.LICENSE_GPL_3_0)
+	if img := getPixbuf(icon, 128); img != nil {
+		dlg.SetLogo(img)
+	}
+	dlg.ShowAll()
 }
 
 func (me *AppWindow) onQuit() {

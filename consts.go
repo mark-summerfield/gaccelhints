@@ -18,8 +18,6 @@ const (
 	appName        = "gAccelHints"
 	configFilename = "gaccelhints.ini"
 	icon           = "images/accelhint.svg"
-	iconUndo       = "images/edit-undo.svg"
-	iconRedo       = "images/edit-redo.svg"
 	iconCopy       = "images/edit-copy.svg"
 	iconCut        = "images/edit-cut.svg"
 	iconPaste      = "images/edit-paste.svg"

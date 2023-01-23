@@ -20,9 +20,8 @@ func maxInt(a, b int) int {
 	return b
 }
 
-func versionInfo() string {
-	return fmt.Sprintf("%s %s • Go %s • Gtk %d.%d.%d", appName,
-		strings.TrimSpace(Version),
+func libInfo() string {
+	return fmt.Sprintf("Go %s • Gtk %d.%d.%d",
 		strings.TrimPrefix(runtime.Version(), "go"), gtk.GetMajorVersion(),
 		gtk.GetMinorVersion(), gtk.GetMicroVersion())
 }
